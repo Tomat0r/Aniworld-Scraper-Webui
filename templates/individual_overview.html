@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
+    
+    <title> Overview</title>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>{{ Iname.replace("-", " ") }} - {{ Itype }}</h2>
+        <ul class="nav nav-tabs" id="seasonTabs" role="tablist">
+            {% for season in range(1, counter_seasons + 1) %}
+                <li class="nav-item">
+                    <a class="nav-link {% if loop.first %}active{% endif %}" id="season{{season}}-tab" data-toggle="tab" href="#season{{season}}" role="tab" aria-controls="season{{season}}" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">Season {{ season }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="tab-content" id="seasonTabsContent">
+            {% for season, episodes in seasons_data.items() %}
+                <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="season{{ season }}" role="tabpanel" aria-labelledby="season{{ season }}-tab">
+    
+                    <!-- Download Season Button -->
+                    <button onclick="downloadSeason({{ season | escape }}, '{{ Ilanguage | escape }}', '{{ Iname | escape }}', '{{ Itype | escape }}')" class="btn btn-success mt-3 mb-3">
+                        <i class="fa fa-download"></i> Download Season {{ season }}
+                    </button>
+    
+                    {% for episode in episodes %}
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Episode {{ episode.number }}: {{ episode.title }}</h5>
+                                <a href="{{ episode.link }}" target="_blank" class="card-link">Watch Episode</a>
+                                <span class="language">({{ Ilanguage }})</span>
+                                <!-- Download Episode Button -->
+                                <button onclick="downloadEpisode({{ season }}, {{ episode.number }}, '{{ episode.title | escape }}', '{{ episode.link | escape }}', '{{ Ilanguage | escape }}', '{{ Iname | escape }}', '{{ Itype | escape }}')" class="btn btn-primary float-right">
+                                    <i class="fa fa-download"></i> Download
+                                </button>
+                            </div>                  
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+
+    <!-- Include Bootstrap JS and its dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+        function downloadEpisode(season, episodeNumber, episodeTitle, episodeLink, Ilanguage, Iname, Itype) {
+            fetch('/download_episode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    season: season, 
+                    episodeNumber: episodeNumber, 
+                    episodeTitle: episodeTitle,
+                    episodeLink: episodeLink,
+                    Ilanguage: Ilanguage, 
+                    Iname: Iname, 
+                    Itype: Itype
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message); // Or handle the response in any other way
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+        
+    </script>
+    <script>
+        function downloadSeason(season, language, name, type) {
+            var xhr = new XMLHttpRequest();
+            var url = "/download_season";  // URL of your Flask route
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log(response.message);
+                    // Additional response handling
+                }
+            };
+            var data = JSON.stringify({
+                "season": season, 
+                "language": language, 
+                "name": name, 
+                "type": type
+            });
+            xhr.send(data);
+        }
+    </script>
+    
+             
+</body>
+</html>

@@ -1,0 +1,11 @@
+/config/
+/test/
+/.idea/
+/logs/
+*.zip
+*.log
+*__pycache__
+/temp/*
+/src/logic/bypass_captcha.py
+/src/extensions/ublock/*
+/data/*
